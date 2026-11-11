@@ -8,12 +8,13 @@
 :root{
   box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
   --bg:#f4f1fb;--panel:#ffffff;--text:#1d1b2f;--muted:#5d5a78;--gold:#f2b632;--gold-d:#9a6a05;--line:#d9d4ee;--btn-text:#2a1c00;--glow:rgba(242,182,50,.45);
+  --ok:#1c7a40;--err:#c2275f;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){--bg:#0f1226;--panel:#1a1f3d;--text:#f1eefc;--muted:#a9a6c8;--line:#2d3463;--glow:rgba(242,182,50,.35);color-scheme:dark}
+  :root:not([data-theme="light"]){--bg:#0f1226;--panel:#1a1f3d;--text:#f1eefc;--muted:#a9a6c8;--line:#2d3463;--glow:rgba(242,182,50,.35);--ok:#5fd68a;--err:#ff7aa8;color-scheme:dark}
 }
-:root[data-theme="dark"]{--bg:#0f1226;--panel:#1a1f3d;--text:#f1eefc;--muted:#a9a6c8;--line:#2d3463;--glow:rgba(242,182,50,.35);color-scheme:dark}
+:root[data-theme="dark"]{--bg:#0f1226;--panel:#1a1f3d;--text:#f1eefc;--muted:#a9a6c8;--line:#2d3463;--glow:rgba(242,182,50,.35);--ok:#5fd68a;--err:#ff7aa8;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:ui-rounded,"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;line-height:1.55;overflow-x:hidden}
@@ -55,15 +56,12 @@ h2{font-size:1.9rem;margin:0 0 28px}
 footer{padding:36px 0 48px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
 @media (max-width:760px){.hero{grid-template-columns:1fr;min-height:auto;text-align:center}.lead{margin-inline:auto}.stage{order:-1}}
 @media (prefers-reduced-motion:reduce){.cube,.btn{animation:none}.pop{animation-duration:.01s}}
-:root{--ok:#1c7a40;--err:#c2275f}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ok:#5fd68a;--err:#ff7aa8}}
-:root[data-theme="dark"]{--ok:#5fd68a;--err:#ff7aa8}
 [hidden]{display:none!important}
 button.btn{border:0;font-family:inherit;cursor:pointer}
 .price{margin:0 0 20px;color:var(--muted);font-size:1.05rem}
 .price b{color:var(--text);font-size:2rem;margin-right:10px}
 .actions{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
-.btn.free{background:#46c46f;color:#06210f;animation:none;box-shadow:0 0 0 0 rgba(70,196,111,.5);animation:pulseg 2.2s ease-out infinite}
+.btn.free{background:#46c46f;color:#06210f;animation:pulseg 2.2s ease-out infinite}
 @keyframes pulseg{0%{box-shadow:0 0 0 0 rgba(70,196,111,.5)}70%,100%{box-shadow:0 0 0 22px rgba(70,196,111,0)}}
 .btn-code{font:inherit;font-weight:800;font-size:1.1rem;cursor:pointer;color:var(--text);padding:16px 26px;border-radius:14px;border:2px solid transparent;
  background:linear-gradient(var(--bg),var(--bg)) padding-box,linear-gradient(120deg,#f2b632,#e0457b,#6c5ce7,#f2b632) border-box;background-size:100% 100%,300% 100%;animation:flow 5s linear infinite;transition:transform .15s}
@@ -97,7 +95,7 @@ button.btn{border:0;font-family:inherit;cursor:pointer}
       <div class="actions">
         <button class="btn" id="buy" type="button">Купить за 100 ₽</button>
         <button class="btn-code" id="codeToggle" type="button" aria-expanded="false" aria-controls="codePanel"><span class="key">🔑</span> Есть код? Активируйте!</button>
-        <a class="btn free" id="dl" href="#" download hidden>Скачать бесплатно</a>
+        <a class="btn free" id="dl" href="#" hidden>Скачать бесплатно</a>
       </div>
       <div class="panel" id="codePanel" hidden>
         <label for="code">Введите код</label>
@@ -128,8 +126,10 @@ button.btn{border:0;font-family:inherit;cursor:pointer}
   <footer>RandomItems для Minecraft 1.21.11. Проект не связан с Mojang и Microsoft.</footer>
 </main>
 <script>
-// Имя файла мода. Положите .jar в одну папку с index.html (имя должно совпадать).
+// Ссылка на файл мода. Для хостинга рядом с index.html оставьте имя файла.
+// Для GitHub Releases вставьте полную ссылку вида https://github.com/.../randomitems-1.0.0.jar
 var DOWNLOAD_URL = "randomitems-1.0.0.jar";
+var DOWNLOAD_NAME = "randomitems-1.0.0.jar";
 // Ссылка на оплату 100 ₽ (ЮMoney, DonationAlerts и т.п.). Пока пусто: кнопка покажет подсказку.
 var PAY_URL = "";
 var $ = function(id){ return document.getElementById(id); };
@@ -138,7 +138,10 @@ var msg = $("msg"), busy = false;
 function say(t, cls){ msg.textContent = t; msg.className = "msg " + (cls || ""); }
 function unlock(silent){
   $("codePanel").hidden = true; $("buy").hidden = true; $("codeToggle").hidden = true;
-  $("dl").href = DOWNLOAD_URL; $("dl").hidden = false;
+  var dl = $("dl");
+  dl.href = DOWNLOAD_URL;
+  dl.setAttribute("download", DOWNLOAD_NAME);
+  dl.hidden = false;
   say(silent ? "Мод для вас бесплатный." : "Код принят. Мод для вас бесплатный.", "ok");
 }
 try { if (localStorage.getItem("ri_unlocked") === "1") unlock(true); } catch(e) {}
