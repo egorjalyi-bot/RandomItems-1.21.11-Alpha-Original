@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RandomItems — мод для Minecraft 1.21.11</title>
+<style>
+:root{
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#f4f1fb;--panel:#ffffff;--text:#1d1b2f;--muted:#5d5a78;--gold:#f2b632;--gold-d:#9a6a05;--line:#d9d4ee;--btn-text:#2a1c00;--glow:rgba(242,182,50,.45);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0f1226;--panel:#1a1f3d;--text:#f1eefc;--muted:#a9a6c8;--line:#2d3463;--glow:rgba(242,182,50,.35);color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#0f1226;--panel:#1a1f3d;--text:#f1eefc;--muted:#a9a6c8;--line:#2d3463;--glow:rgba(242,182,50,.35);color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:ui-rounded,"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;line-height:1.55;overflow-x:hidden}
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center;min-height:86vh;padding:40px 0}
+h1{font-size:clamp(2.6rem,7vw,5rem);line-height:1;margin:0 0 20px;font-weight:900;letter-spacing:-.02em}
+.lead{font-size:1.2rem;color:var(--muted);max-width:30em;margin:0 0 32px}
+.btn{position:relative;display:inline-block;overflow:hidden;padding:18px 34px;border-radius:14px;background:var(--gold);color:var(--btn-text);font-weight:800;font-size:1.15rem;text-decoration:none;box-shadow:0 0 0 0 var(--glow);animation:pulse 2.8s ease-out infinite;transition:transform .15s}
+.btn:hover{transform:translateY(-3px)}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible,.cube-btn:focus-visible{outline:3px solid var(--text);outline-offset:4px}
+.btn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.65),transparent);transform:skewX(-20deg);transition:left .6s}
+.btn:hover::after{left:120%}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--glow)}70%,100%{box-shadow:0 0 0 22px rgba(242,182,50,0)}}
+.meta{margin:18px 0 0;color:var(--muted);font-size:.95rem}
+.stage{position:relative;display:flex;flex-direction:column;align-items:center;gap:26px}
+.cube-btn{background:none;border:0;padding:0;cursor:pointer;width:190px;height:190px;perspective:800px;-webkit-tap-highlight-color:transparent}
+.cube{position:relative;width:130px;height:130px;margin:30px auto;transform-style:preserve-3d;animation:spin 14s linear infinite}
+.cube-btn:hover .cube{animation-duration:5s}
+.cube.shake{animation:shake .45s}
+@keyframes spin{from{transform:rotateX(-22deg) rotateY(0)}to{transform:rotateX(-22deg) rotateY(360deg)}}
+@keyframes shake{0%,100%{transform:rotateX(-22deg) rotateY(30deg) scale(1)}25%{transform:rotateX(-22deg) rotateY(30deg) scale(1.18) rotateZ(-6deg)}60%{transform:rotateX(-22deg) rotateY(30deg) scale(.94) rotateZ(5deg)}}
+.face{position:absolute;inset:0;display:grid;place-items:center;font-size:76px;font-weight:900;color:#fff8dc;border:5px solid #a56d06;background:
+ repeating-linear-gradient(0deg,rgba(0,0,0,.07) 0 8px,transparent 8px 16px),
+ repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0 8px,transparent 8px 16px),#f2b632;text-shadow:4px 4px 0 #a56d06}
+.f1{transform:translateZ(65px)}.f2{transform:rotateY(90deg) translateZ(65px);filter:brightness(.88)}
+.f3{transform:rotateY(180deg) translateZ(65px)}.f4{transform:rotateY(-90deg) translateZ(65px);filter:brightness(.88)}
+.f5{transform:rotateX(90deg) translateZ(65px);filter:brightness(1.12)}.f6{transform:rotateX(-90deg) translateZ(65px);filter:brightness(.7)}
+.pop{position:absolute;top:30px;left:50%;font-size:46px;pointer-events:none;animation:pop 1.3s ease-out forwards}
+@keyframes pop{0%{transform:translate(-50%,40px) scale(.3);opacity:0}25%{opacity:1}100%{transform:translate(calc(-50% + var(--dx)),-120px) scale(1.1) rotate(var(--rot));opacity:0}}
+.drop{min-height:2.6em;text-align:center;color:var(--muted);font-size:1rem;margin:0}
+.drop b{color:var(--text)}
+.section{padding:56px 0;border-top:1px solid var(--line)}
+h2{font-size:1.9rem;margin:0 0 28px}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:16px;counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:18px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
+.steps li::before{content:counter(s);flex:none;width:38px;height:38px;border-radius:10px;background:var(--gold);color:var(--btn-text);display:grid;place-items:center;font-weight:900}
+.steps p{margin:0}.steps small{color:var(--muted);display:block;margin-top:2px}
+footer{padding:36px 0 48px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
+@media (max-width:760px){.hero{grid-template-columns:1fr;min-height:auto;text-align:center}.lead{margin-inline:auto}.stage{order:-1}}
+@media (prefers-reduced-motion:reduce){.cube,.btn{animation:none}.pop{animation-duration:.01s}}
+:root{--ok:#1c7a40;--err:#c2275f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ok:#5fd68a;--err:#ff7aa8}}
+:root[data-theme="dark"]{--ok:#5fd68a;--err:#ff7aa8}
+[hidden]{display:none!important}
+button.btn{border:0;font-family:inherit;cursor:pointer}
+.price{margin:0 0 20px;color:var(--muted);font-size:1.05rem}
+.price b{color:var(--text);font-size:2rem;margin-right:10px}
+.actions{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.btn.free{background:#46c46f;color:#06210f;animation:none;box-shadow:0 0 0 0 rgba(70,196,111,.5);animation:pulseg 2.2s ease-out infinite}
+@keyframes pulseg{0%{box-shadow:0 0 0 0 rgba(70,196,111,.5)}70%,100%{box-shadow:0 0 0 22px rgba(70,196,111,0)}}
+.btn-code{font:inherit;font-weight:800;font-size:1.1rem;cursor:pointer;color:var(--text);padding:16px 26px;border-radius:14px;border:2px solid transparent;
+ background:linear-gradient(var(--bg),var(--bg)) padding-box,linear-gradient(120deg,#f2b632,#e0457b,#6c5ce7,#f2b632) border-box;background-size:100% 100%,300% 100%;animation:flow 5s linear infinite;transition:transform .15s}
+.btn-code:hover{transform:translateY(-3px)}
+.btn-code:focus-visible,.panel input:focus-visible,.btn-act:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+.btn-code .key{display:inline-block;transition:transform .3s}
+.btn-code:hover .key{transform:rotate(-25deg) scale(1.2)}
+@keyframes flow{0%{background-position:0 0,0% 0}100%{background-position:0 0,300% 0}}
+.panel{margin-top:20px;max-width:42em;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px;text-align:left}
+.panel:not([hidden]){animation:open .35s ease-out}
+@keyframes open{from{opacity:0;transform:translateY(-10px) scale(.97)}to{opacity:1;transform:none}}
+.panel label{display:block;font-weight:800;font-size:1.2rem;margin-bottom:14px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.panel input{flex:1 1 100%;min-width:0;padding:24px 22px;font:inherit;font-size:clamp(1rem,4.4vw,1.45rem);font-weight:700;border:3px solid var(--line);border-radius:16px;background:var(--bg);color:var(--text)}
+.panel input:focus{border-color:var(--gold)}
+.btn-act{flex:1 1 100%;padding:22px;border:0;border-radius:16px;background:var(--gold);color:var(--btn-text);font:inherit;font-size:1.3rem;font-weight:800;cursor:pointer}
+.btn-act:disabled{opacity:.6;cursor:wait}
+.msg{min-height:1.5em;margin:14px 0 0;font-weight:700}
+.msg.ok{color:var(--ok)}.msg.err{color:var(--err)}
+@media (max-width:760px){.actions{justify-content:center}.panel{margin-inline:auto}}
+@media (prefers-reduced-motion:reduce){.btn-code,.btn.free{animation:none}.panel:not([hidden]){animation:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <h1>RandomItems</h1>
+      <p class="lead">Поставьте блок, нажмите на него правой кнопкой мыши. Житель простонет, а над блоком выпадет случайный предмет из игры.</p>
+      <p class="price"><b>100 ₽</b>Бесплатно, если у вас есть код</p>
+      <div class="actions">
+        <button class="btn" id="buy" type="button">Купить за 100 ₽</button>
+        <button class="btn-code" id="codeToggle" type="button" aria-expanded="false" aria-controls="codePanel"><span class="key">🔑</span> Есть код? Активируйте!</button>
+        <a class="btn free" id="dl" href="#" download hidden>Скачать бесплатно</a>
+      </div>
+      <div class="panel" id="codePanel" hidden>
+        <label for="code">Введите код</label>
+        <div class="row"><input id="code" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="FreeRandomItemsDownloadNoMoney#…"><button class="btn-act" id="act" type="button">Активировать</button></div>
+      </div>
+      <p class="msg" id="msg" aria-live="polite"></p>
+      <p class="meta">Для Minecraft 1.21.11, нужен Fabric и Java 21</p>
+    </div>
+    <div class="stage">
+      <button class="cube-btn" id="cube" aria-label="Нажмите на блок, чтобы получить случайный предмет">
+        <div class="cube" id="cubeInner">
+          <div class="face f1">?</div><div class="face f2">?</div><div class="face f3">?</div>
+          <div class="face f4">?</div><div class="face f5">?</div><div class="face f6">?</div>
+        </div>
+      </button>
+      <p class="drop" id="drop" aria-live="polite">Нажмите на блок и посмотрите, что выпадет</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Как установить</h2>
+    <ol class="steps">
+      <li><p>Установите Fabric Loader для Minecraft 1.21.11<small>Установщик есть на сайте fabricmc.net</small></p></li>
+      <li><p>Положите RandomItems.jar и Fabric API в папку mods<small>Папка находится в .minecraft, Fabric API нужен той же версии 1.21.11</small></p></li>
+      <li><p>Запустите игру и найдите блок в творческом режиме<small>Он лежит во вкладке «Строительные блоки»</small></p></li>
+    </ol>
+  </section>
+  <footer>RandomItems для Minecraft 1.21.11. Проект не связан с Mojang и Microsoft.</footer>
+</main>
+<script>
+// Имя файла мода. Положите .jar в одну папку с index.html (имя должно совпадать).
+var DOWNLOAD_URL = "randomitems-1.0.0.jar";
+// Ссылка на оплату 100 ₽ (ЮMoney, DonationAlerts и т.п.). Пока пусто: кнопка покажет подсказку.
+var PAY_URL = "";
+var $ = function(id){ return document.getElementById(id); };
+var HOLDER = "t" + Math.random().toString(36).slice(2);
+var msg = $("msg"), busy = false;
+function say(t, cls){ msg.textContent = t; msg.className = "msg " + (cls || ""); }
+function unlock(silent){
+  $("codePanel").hidden = true; $("buy").hidden = true; $("codeToggle").hidden = true;
+  $("dl").href = DOWNLOAD_URL; $("dl").hidden = false;
+  say(silent ? "Мод для вас бесплатный." : "Код принят. Мод для вас бесплатный.", "ok");
+}
+try { if (localStorage.getItem("ri_unlocked") === "1") unlock(true); } catch(e) {}
+$("buy").addEventListener("click", function(){
+  if (PAY_URL) window.open(PAY_URL, "_blank", "noopener");
+  else say("Ссылка на оплату пока не добавлена.", "err");
+});
+$("codeToggle").addEventListener("click", function(){
+  var p = $("codePanel"), open = p.hidden;
+  p.hidden = !open; this.setAttribute("aria-expanded", String(open));
+  if (open) $("code").focus();
+});
+function localRedeem(n){
+  var used = [];
+  try { used = JSON.parse(localStorage.getItem("ri_used") || "[]"); } catch(e) {}
+  if (used.indexOf(n) !== -1){ say("Этот код уже активирован на этом устройстве.", "err"); return; }
+  used.push(n);
+  try { localStorage.setItem("ri_used", JSON.stringify(used)); localStorage.setItem("ri_unlocked", "1"); } catch(e) {}
+  unlock(false);
+}
+async function activate(){
+  if (busy) return;
+  var m = /^FreeRandomItemsDownloadNoMoney#(\d{1,3})$/.exec($("code").value.trim());
+  var n = m ? parseInt(m[1], 10) : 0;
+  if (!m || n < 1 || n > 100){ say("Код не подходит. Проверьте, что он введён полностью.", "err"); return; }
+  busy = true; $("act").disabled = true; say("Проверяем код…");
+  try {
+    var db = null;
+    try { if (window.claude && claude.use) db = await claude.use("db"); } catch(e) {}
+    if (!db){ localRedeem(n); return; }
+    var ref = db.collection("codes").doc(String(n));
+    var lease = await ref.acquire({holder: HOLDER, ttlMs: 5000});
+    if (!lease.acquired){ say("Этот код сейчас проверяется. Попробуйте ещё раз через несколько секунд.", "err"); return; }
+    var snap = await ref.get();
+    var d = snap.exists ? snap.data() : null;
+    if (d && d.used){ say("Этот код уже активирован.", "err"); return; }
+    await ref.set({used: true});
+    try { localStorage.setItem("ri_unlocked", "1"); } catch(e) {}
+    unlock(false);
+  } catch(e){ say("Не удалось проверить код. Попробуйте позже.", "err"); }
+  finally { busy = false; $("act").disabled = false; }
+}
+$("act").addEventListener("click", activate);
+$("code").addEventListener("keydown", function(e){ if (e.key === "Enter") activate(); });
+
+var ITEMS = [["💎","Алмаз"],["🍎","Яблоко"],["🗡️","Меч"],["🪓","Топор"],["🥕","Морковь"],["🧪","Зелье"],
+  ["🎣","Удочка"],["🏹","Лук"],["🥩","Стейк"],["🪵","Бревно"],["🔔","Колокол"],["🧭","Компас"],["📖","Книга"],["🥚","Яйцо"]];
+var cube = document.getElementById("cube"), inner = document.getElementById("cubeInner"),
+    drop = document.getElementById("drop");
+cube.addEventListener("click", function(){
+  var it = ITEMS[Math.floor(Math.random()*ITEMS.length)];
+  inner.classList.remove("shake"); void inner.offsetWidth; inner.classList.add("shake");
+  var p = document.createElement("span");
+  p.className = "pop"; p.textContent = it[0];
+  p.style.setProperty("--dx", (Math.random()*120-60)+"px");
+  p.style.setProperty("--rot", (Math.random()*80-40)+"deg");
+  cube.parentNode.appendChild(p);
+  setTimeout(function(){ p.remove(); }, 1400);
+  drop.innerHTML = "Выпало: <b>" + it[0] + " " + it[1] + "</b>";
+});
+</script>
+</body>
+</html>
